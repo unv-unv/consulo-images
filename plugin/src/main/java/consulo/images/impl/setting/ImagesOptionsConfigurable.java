@@ -12,14 +12,11 @@ import consulo.ide.setting.ShowSettingsUtil;
 import consulo.images.localize.ImagesLocalize;
 import consulo.platform.Platform;
 import consulo.project.Project;
-import consulo.ui.CheckBox;
-import consulo.ui.Component;
-import consulo.ui.IntBox;
+import consulo.ui.*;
 import consulo.ui.annotation.RequiredUIAccess;
-import consulo.ui.border.BorderPosition;
-import consulo.ui.border.BorderStyle;
 import consulo.ui.ex.FileChooserTextBoxBuilder;
 import consulo.ui.layout.LabeledLayout;
+import consulo.ui.layout.TableLayout;
 import consulo.ui.layout.VerticalLayout;
 import consulo.ui.util.LabeledBuilder;
 import jakarta.inject.Inject;
@@ -60,19 +57,19 @@ public class ImagesOptionsConfigurable extends SimpleConfigurableByProperties im
 
         VerticalLayout root = VerticalLayout.create(0);
 
-        VerticalLayout imagesLayout = VerticalLayout.create();
+        TableLayout imagesLayout = TableLayout.create(StaticPosition.TOP);
+        int imagesRow = 0;
         root.add(LabeledLayout.create(ImagesLocalize.mainPageBorderTitle(), imagesLayout));
 
         CheckBox showGridLines = CheckBox.create(ImagesLocalize.showGridLines());
-        imagesLayout.add(showGridLines);
+        imagesLayout.add(showGridLines, TableLayout.cell(imagesRow, 0).fill());
         propertyBuilder.add(showGridLines, gridOptions::isShowDefault, it -> gridOptions.setOption(GridOptions.ATTR_SHOW_DEFAULT, it));
 
-        VerticalLayout gridOptionsPanel = VerticalLayout.create(0);
-        gridOptionsPanel.addBorder(BorderPosition.LEFT, BorderStyle.EMPTY, null, 24);
-        imagesLayout.add(gridOptionsPanel);
-
         IntBox gridLineZoomLimit = IntBox.create(2).withRange(2, 8);
-        gridOptionsPanel.add(LabeledBuilder.sided(ImagesLocalize.showGridZoomLimit(), gridLineZoomLimit));
+        Label gridLineZoomLimitLabel = Label.create(ImagesLocalize.showGridZoomLimit());
+        gridLineZoomLimitLabel.setTarget(gridLineZoomLimit);
+        imagesLayout.add(gridLineZoomLimitLabel, TableLayout.cell(++imagesRow, 0));
+        imagesLayout.add(gridLineZoomLimit, TableLayout.cell(imagesRow, 1));
         propertyBuilder.add(
             gridLineZoomLimit,
             gridOptions::getLineZoomFactor,
@@ -80,23 +77,25 @@ public class ImagesOptionsConfigurable extends SimpleConfigurableByProperties im
         );
 
         IntBox gridLineSpan = IntBox.create(1).withRange(1, 100);
-        gridOptionsPanel.add(LabeledBuilder.sided(ImagesLocalize.showGridEvery(), gridLineSpan));
+        Label gridLineLabel = Label.create(ImagesLocalize.showGridEvery());
+        gridLineLabel.setTarget(gridLineSpan);
+        imagesLayout.add(gridLineLabel, TableLayout.cell(++imagesRow, 0));
+        imagesLayout.add(gridLineSpan, TableLayout.cell(imagesRow, 1));
         propertyBuilder.add(gridLineSpan, gridOptions::getLineSpan, it -> gridOptions.setOption(GridOptions.ATTR_LINE_SPAN, it));
 
         CheckBox showChessboard = CheckBox.create(ImagesLocalize.showTransparencyChessboard());
-        imagesLayout.add(showChessboard);
+        imagesLayout.add(showChessboard, TableLayout.cell(++imagesRow, 0));
         propertyBuilder.add(
             showChessboard,
             chessboardOptions::isShowDefault,
             it -> chessboardOptions.setOption(TransparencyChessboardOptions.ATTR_SHOW_DEFAULT, it)
         );
 
-        VerticalLayout chessboardPanel = VerticalLayout.create(0);
-        chessboardPanel.addBorder(BorderPosition.LEFT, BorderStyle.EMPTY, null, 24);
-        imagesLayout.add(chessboardPanel);
-
         IntBox chessboardSize = IntBox.create(1).withRange(1, 100);
-        chessboardPanel.add(LabeledBuilder.sided(ImagesLocalize.chessboardCellSize(), chessboardSize));
+        Label chessboardSizeLabel = Label.create(ImagesLocalize.chessboardCellSize());
+        chessboardSizeLabel.setTarget(chessboardSize);
+        imagesLayout.add(chessboardSizeLabel, TableLayout.cell(++imagesRow, 0));
+        imagesLayout.add(chessboardSize, TableLayout.cell(imagesRow, 1));
         propertyBuilder.add(
             chessboardSize,
             chessboardOptions::getCellSize,
@@ -106,19 +105,18 @@ public class ImagesOptionsConfigurable extends SimpleConfigurableByProperties im
         Platform platform = Platform.current();
 
         CheckBox zoomWheel = CheckBox.create(ImagesLocalize.enableMousewheelZooming(platform.os().isMac() ? "Cmd" : "Ctrl"));
-        imagesLayout.add(zoomWheel);
+        imagesLayout.add(zoomWheel, TableLayout.cell(++imagesRow, 0).fill());
         propertyBuilder.add(zoomWheel, zoomOptions::isWheelZooming, it -> zoomOptions.setOption(ZoomOptions.ATTR_WHEEL_ZOOMING, it));
 
         CheckBox smartWheel = CheckBox.create(ImagesLocalize.smartZoom());
-        imagesLayout.add(smartWheel);
+        imagesLayout.add(smartWheel, TableLayout.cell(++imagesRow, 0));
         propertyBuilder.add(smartWheel, zoomOptions::isSmartZooming, it -> zoomOptions.setOption(ZoomOptions.ATTR_SMART_ZOOMING, it));
 
-        VerticalLayout smartWheelPanel = VerticalLayout.create(0);
-        smartWheelPanel.addBorder(BorderPosition.LEFT, BorderStyle.EMPTY, null, 24);
-        imagesLayout.add(smartWheelPanel);
-
         IntBox smartZoomingWidth = IntBox.create(1).withRange(1, 9999);
-        smartWheelPanel.add(LabeledBuilder.sided(ImagesLocalize.settingsPrefferedSmartZoomWidth(), smartZoomingWidth));
+        Label smartZoomingWidthLabel = Label.create(ImagesLocalize.settingsPrefferedSmartZoomWidth());
+        smartZoomingWidthLabel.setTarget(smartZoomingWidth);
+        imagesLayout.add(smartZoomingWidthLabel, TableLayout.cell(++imagesRow, 0));
+        imagesLayout.add(smartZoomingWidth, TableLayout.cell(imagesRow, 1));
         propertyBuilder.add(
             smartZoomingWidth,
             () -> zoomOptions.getPrefferedSize().getWidth(),
@@ -126,7 +124,10 @@ public class ImagesOptionsConfigurable extends SimpleConfigurableByProperties im
         );
 
         IntBox smartZoomingHeight = IntBox.create(1).withRange(1, 9999);
-        smartWheelPanel.add(LabeledBuilder.sided(ImagesLocalize.settingsPrefferedSmartZoomHeight(), smartZoomingHeight));
+        Label smartZoomingHeightLabel = Label.create(ImagesLocalize.settingsPrefferedSmartZoomHeight());
+        smartZoomingHeightLabel.setTarget(smartZoomingHeight);
+        imagesLayout.add(smartZoomingHeightLabel, TableLayout.cell(++imagesRow, 0));
+        imagesLayout.add(smartZoomingHeight, TableLayout.cell(imagesRow, 1));
         propertyBuilder.add(
             smartZoomingHeight,
             () -> zoomOptions.getPrefferedSize().getHeight(),
